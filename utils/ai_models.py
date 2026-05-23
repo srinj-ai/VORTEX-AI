@@ -1,40 +1,66 @@
+import csv
 import os
+from pathlib import Path
 from typing import List, Dict
-from openai import OpenAI
-from dotenv import load_dotenv
-import pandas as pd
 
-# Load environment variables
-load_dotenv()
 
-# Verify API key
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY not found in environment variables. Please add it to your .env file.")
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODELS_PATH = BASE_DIR / "models.csv"
+ENV_PATH = BASE_DIR / ".env"
 
-# Initialize OpenAI client with OpenRouter headers
-client = OpenAI(
-    api_key=api_key,
-    base_url="https://openrouter.ai/api/v1"
-)
+
+def load_env_file() -> None:
+    if not ENV_PATH.exists():
+        return
+
+    for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        os.environ.setdefault(key, value)
+
+
+load_env_file()
+
+
+def get_api_key() -> str:
+    return os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY") or ""
+
+
+def get_client():
+    api_key = get_api_key()
+    if not api_key:
+        raise ValueError(
+            "API key not found. Add OPENROUTER_API_KEY to your .env file, "
+            "or set OPENAI_API_KEY as a fallback."
+        )
+
+    from openai import OpenAI
+
+    return OpenAI(
+        api_key=api_key,
+        base_url="https://openrouter.ai/api/v1",
+    )
 
 # Load models from CSV
 def load_models():
     try:
-        models_df = pd.read_csv('models.csv')
-        # Strip whitespace from column names
-        models_df.columns = models_df.columns.str.strip()
-        print("Loaded models from CSV:", models_df)  # Debug print
-        model_dict = dict(zip(models_df['Model Name'], models_df['Model ID']))
-        print("Created model dictionary:", model_dict)  # Debug print
-        return model_dict
+        with MODELS_PATH.open(newline="", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+            return {
+                row["Model Name"].strip(): row["Model ID"].strip()
+                for row in reader
+                if row.get("Model Name") and row.get("Model ID")
+            }
     except Exception as e:
         print(f"Error loading models: {e}")
         return {}
 
 # Get available models
 AVAILABLE_MODELS = load_models()
-print("Available models:", AVAILABLE_MODELS)  # Debug print
 
 def generate_response(model_id: str, messages: List[Dict]) -> str:
     """
@@ -48,6 +74,7 @@ def generate_response(model_id: str, messages: List[Dict]) -> str:
         str: The generated response
     """
     try:
+        client = get_client()
         response = client.chat.completions.create(
             extra_headers={
                 "HTTP-Referer": "https://github.com/UTGyan7/CloudCaesar", # Optional. Site URL for rankings on openrouter.ai.

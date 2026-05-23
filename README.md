@@ -34,9 +34,20 @@ pip install -r requirements.txt
 ```
 
 ### 3. Add Your AI Model Keys (if needed)
-- If your models require API keys (e.g., OpenAI), create a `.env` file or set environment variables as needed.
+- Copy `.env.example` to `.env`.
+- Add your real OpenRouter API key to `.env`:
+```env
+OPENROUTER_API_KEY=your_real_key_here
+```
+- Never commit `.env`. It is ignored by Git so your private key stays local.
 
 ### 4. Run Locally
+Pure Python CLI:
+```bash
+python cli.py
+```
+
+Streamlit UI:
 ```bash
 streamlit run app.py
 ```
