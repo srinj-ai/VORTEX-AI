@@ -8,11 +8,11 @@ An AI chatbot with a pure Python CLI and a FastAPI text API. It uses free OpenRo
 
 ## Features
 
-- Chat with selectable free OpenRouter models.
-- Pure Python terminal chat.
-- FastAPI backend with interactive API docs.
-- Local `.env` support for private API keys.
-- Open-source friendly setup with `.env.example`.
+- Chat with selectable free OpenRouter models
+- Pure Python terminal chat
+- FastAPI backend with interactive API docs
+- Local `.env` support for private API keys
+- Open-source friendly setup with `.env.example`
 
 ## Setup
 
