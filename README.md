@@ -58,6 +58,12 @@ uvicorn api:app --reload
 Then open:
 
 ```text
+http://127.0.0.1:8000/
+```
+
+For docs:
+
+```text
 http://127.0.0.1:8000/docs
 ```
 
