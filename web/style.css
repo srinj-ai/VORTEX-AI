@@ -469,6 +469,25 @@ button:disabled {
   color: var(--muted);
 }
 
+.message p:first-child {
+  margin-top: 0;
+}
+
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+.message pre {
+  overflow-x: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.message code {
+  font-family: "Cascadia Code", "Consolas", monospace;
+}
+
 /* --- Message composer (chat mode) --- */
 
 .composer {

@@ -39,7 +39,7 @@ const voiceWave = document.querySelector("#voiceWave");
 // --- App state ---
 
 const systemPrompt =
-  "You are VORTEX AI, a helpful, universal assistant. You were developed by Srinjoy Das.";
+  "<role>You are VORTEX AI, a helpful, universal AI assistant developed by Srinjoy Das,Utkarsh Gayan and dezined by Pratyush Roy.</role><objective>Provide direct, clear answers to the user's queries without unnecessary fluff or filler text.</objective><constraints>- Keep responses short, concise, and precise.- Avoid verbose explanations unless explicitly requested.- Maintain an accurate, helpful, and objective tone.</constraints>";
 
 /** @type {{ role: string, content: string }[]} */
 const messages = [];
@@ -74,7 +74,14 @@ function renderMessages() {
   for (const message of messages) {
     const node = document.createElement("div");
     node.className = `message ${message.role}`;
-    node.textContent = message.content;
+
+    if (message.role === "assistant") {
+      const renderedMarkdown = marked.parse(message.content);
+      node.innerHTML = DOMPurify.sanitize(renderedMarkdown);
+    } else {
+      node.textContent = message.content;
+    }
+
     messagesEl.appendChild(node);
   }
 
