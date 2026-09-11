@@ -14,6 +14,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from espled import control_led
 from utils.ai_models import AVAILABLE_MODELS, generate_response
 
 
@@ -87,6 +88,21 @@ def open_website_command(prompt: str) -> str | None:
     return f"Opened {site_name.title()}."
 
 
+def led_command(prompt: str) -> str | None:
+    """Handle exact LED control commands before sending a prompt to the model."""
+    normalized_prompt = re.sub(r"\s+", " ", prompt.lower()).strip()
+    commands = {
+        "turn on led": ("on", "LED turned on."),
+        "turn off led": ("off", "LED turned off."),
+    }
+    command = commands.get(normalized_prompt)
+    if not command:
+        return None
+
+    control_led(command[0])
+    return command[1]
+
+
 def friendly_error(raw_error: str) -> tuple[int, str]:
     """
     Map raw provider errors to an HTTP status code and a user-facing message.
@@ -154,6 +170,10 @@ def chat(request: ChatRequest) -> ChatResponse:
     # Handle "open youtube" style commands without calling the API
     latest_prompt = get_latest_user_message(request.messages)
     local_reply = open_website_command(latest_prompt)
+    if local_reply:
+        return ChatResponse(reply=local_reply)
+
+    local_reply = led_command(latest_prompt)
     if local_reply:
         return ChatResponse(reply=local_reply)
 
